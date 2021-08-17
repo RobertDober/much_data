@@ -3,16 +3,20 @@ defmodule MuchData do
   Documentation for `MuchData`.
   """
 
-  @doc """
-  Hello world.
+  def parse_file(filename, options \\ [])
+  def parse_file(filename, options) do
+    result = _parse_file(filename)
+    if Keyword.get(options, :remove_filename) do
+      result
+    else
+      %{Path.basename(filename, Path.extname(filename)) => result}
+    end
+  end
 
-  ## Examples
-
-      iex> MuchData.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  defp _parse_file(filename) do
+    case YamlElixir.read_from_file(filename) do
+      {:ok, result} -> result
+      {:error, message} -> raise message
+    end
   end
 end
