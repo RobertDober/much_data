@@ -5,6 +5,7 @@
 # much_data—A Pure Elixir Markdown Processor
 
 [![CI](https://github.com/RobertDober/much_data/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertDober/much_data/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/RobertDober/much_data/badge.svg?branch=main)](https://coveralls.io/github/RobertDober/much_data?branch=main)
 [![Hex.pm](https://img.shields.io/hexpm/v/much_data.svg)](https://hex.pm/packages/much_data)
 [![Hex.pm](https://img.shields.io/hexpm/dw/much_data.svg)](https://hex.pm/packages/much_data)
 [![Hex.pm](https://img.shields.io/hexpm/dt/much_data.svg)](https://hex.pm/packages/much_data)
