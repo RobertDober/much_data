@@ -24,7 +24,7 @@ by adding `much_data` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:much_data, "~> 0.1.0"}
+    {:much_data, "~> <%= MuchData.version %>"}
   ]
 end
 ```
