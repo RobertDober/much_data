@@ -1,9 +1,14 @@
 defmodule MuchData.FileWalker do
   @moduledoc false
+  use MuchData.Types
+
+  @spec walk(binary(), binary(), file_walker_fn(), any()) :: any()
   def walk(dir, extension, fun, acc) do
     _walk(dir, [], extension, fun, acc)
   end
 
+  @typep dirs_and_files :: %{false: binaries(), true: binaries()}
+  @spec _partition(binary()) :: dirs_and_files()
   defp _partition(dir) do
     dir
     # |> IO.inspect(lable: :_partition)
@@ -13,6 +18,7 @@ defmodule MuchData.FileWalker do
     |> Enum.into(%{false: [], true: []})
   end
 
+  @spec _walk(String.t, binaries(), String.t, file_walker_fn(), map()) :: map()
   def _walk(dir, prefixes, extension, fun, acc) do
     %{false: files, true: dirs} = _partition(dir) #|> IO.inspect()
 

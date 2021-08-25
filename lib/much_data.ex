@@ -1,5 +1,7 @@
 defmodule MuchData do
+  use MuchData.Types
   import ExAequo.KeywordParams, only: [tuple_from_params: 3]
+
 
   @moduledoc """
   Documentation for `MuchData`.
@@ -39,13 +41,14 @@ defmodule MuchData do
 
   alias __MODULE__.Error
 
-  @doc false
+  @spec dig(map(), binary()) :: NestedMap.result_t
   def dig(map, compound_string_key) do
     keys = String.split(compound_string_key, ".")
     NestedMap.fetch(map, keys)
   end
 
   @doc false
+  @spec dig!(map(), binary()) :: maybe_error(NestedMap.result_t)
   def dig!(map, compound_string_key) do
     case dig(map, compound_string_key) do
       {:ok, value} -> value
@@ -54,7 +57,7 @@ defmodule MuchData do
   end
 
   @default_options %{ remove_filename: false, expand_path: false }
-  @doc false
+  @spec parse_file(binary(), Keyword.t) :: maybe_error(map())
   def parse_file(filename, options \\ [])
   def parse_file(filename, options) do
     %{remove_filename: remove_filename, expand_path: expand_path} = Map.merge(@default_options, options |> Enum.into(%{}))
@@ -69,6 +72,7 @@ defmodule MuchData do
     end
   end
 
+  @spec parse_tree(binary(), Keyword.t) :: map()
   def parse_tree(path, options \\ [])
   def parse_tree(path, options) do
     {include_name, split_path} = tuple_from_params([include_name: true, split_path: false], options, [:include_name, :split_path])
@@ -89,34 +93,7 @@ defmodule MuchData do
       do: to_string(version)
   end
 
-  defp _make_prefix_map(filename, result) do
-    (Path.extname(filename) |> Regex.escape) <> "\z"
-      |> Regex.compile!
-      |> Regex.replace(filename, "")
-      |> Path.split
-      |> Enum.reverse
-      |> Enum.reduce(result, fn key, acc -> %{key => acc} end)
-  end
-
-  defp _parse_file(filename) do
-    case YamlElixir.read_from_file(filename) do
-      {:ok, result} -> result
-      {:error, message} -> raise message
-    end
-  end
-
-  defp _tree_hash(path, _options) do
-    MuchData.FileWalker.walk(path, ".yml", &_parse/2, %{})
-  end
-
-  @spec _parse({String.t, list()}, map()) :: map()
-  defp _parse({file, prefix}, data) do
-    parsed = _parse_yml(file)
-    # IO.inspect(file, label: :file)
-    _add_maps(prefix, data, parsed) # |> IO.inspect(label: "Added maps")
-  end
-
-  @spec _add_maps(list(), map(), String.t) :: map()
+  @spec _add_maps(binaries(), map(), map()) :: map()
   defp _add_maps(prefix, data, parsed)
   defp _add_maps([], data, _parsed), do: data
 
@@ -130,6 +107,31 @@ defmodule MuchData do
     %{data1 | h => result}
   end
 
+  @spec _make_prefix_map(binary(), map()) :: map()
+  defp _make_prefix_map(filename, result) do
+    (Path.extname(filename) |> Regex.escape) <> "\z"
+      |> Regex.compile!
+      |> Regex.replace(filename, "")
+      |> Path.split
+      |> Enum.reverse
+      |> Enum.reduce(result, fn key, acc -> %{key => acc} end)
+  end
+
+  @spec _parse_file(binary()) :: maybe_error(map())
+  defp _parse_file(filename) do
+    case YamlElixir.read_from_file(filename) do
+      {:ok, result} -> result
+      {:error, message} -> raise message
+    end
+  end
+
+  @spec _parse(prefixed(), map()) :: map()
+  defp _parse({file, prefix}, data) do
+    parsed = _parse_yml(file)
+    # IO.inspect(file, label: :file)
+    _add_maps(prefix, data, parsed) # |> IO.inspect(label: "Added maps")
+  end
+
   @spec _parse_yml(String.t) :: map()
   defp _parse_yml(file, options \\ []) do
     result = YamlElixir.read_from_file!(file)
@@ -138,5 +140,10 @@ defmodule MuchData do
     else
       result
     end
+  end
+
+  @spec _tree_hash(binary(), Keyword.t) :: map()
+  defp _tree_hash(path, _options) do
+    MuchData.FileWalker.walk(path, ".yml", &_parse/2, %{})
   end
 end
