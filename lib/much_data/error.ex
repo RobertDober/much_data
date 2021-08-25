@@ -1,5 +1,7 @@
 defmodule MuchData.Error do
 
+
+
   @moduledoc false
 
   defexception [:message]

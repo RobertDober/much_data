@@ -1,4 +1,6 @@
 defmodule MuchData do
+  import ExAequo.KeywordParams, only: [tuple_from_params: 3]
+
   @moduledoc """
   Documentation for `MuchData`.
 
@@ -60,17 +62,21 @@ defmodule MuchData do
       raise Error, "must not specify remove_filename and expand_path"
     end
     result = _parse_file(filename)
-    case {remove_filename, expand_path} do
-      {true, _} -> result
-      {_, true} -> _make_prefix_map(filename, result)
-      _         -> %{Path.basename(filename, Path.extname(filename)) => result}
+    cond do
+      remove_filename -> result
+      expand_path     -> _make_prefix_map(filename, result)
+      true            -> %{Path.basename(filename, Path.extname(filename)) => result}
     end
   end
 
   def parse_tree(path, options \\ [])
   def parse_tree(path, options) do
-    # Make a deep hash representing all yml files in the tree
-    th = _tree_hash(path, options)
+    {include_name, split_path} = tuple_from_params([include_name: true, split_path: false], options, [:include_name, :split_path])
+    cond do
+      split_path -> NestedMap.make_nested_map(Path.split(path), _tree_hash(path, options))
+      include_name -> %{Path.basename(path) => _tree_hash(path, options)}
+      true -> _tree_hash(path, options)
+    end
   end
 
   @doc """
@@ -103,11 +109,14 @@ defmodule MuchData do
     MuchData.FileWalker.walk(path, ".yml", &_parse/2, %{})
   end
 
+  @spec _parse({String.t, list()}, map()) :: map()
   defp _parse({file, prefix}, data) do
-    # parsed = _parse_yml(file)
-    _add_maps(prefix, data, file) # |> IO.inspect(label: "Added maps")
+    parsed = _parse_yml(file)
+    # IO.inspect(file, label: :file)
+    _add_maps(prefix, data, parsed) # |> IO.inspect(label: "Added maps")
   end
 
+  @spec _add_maps(list(), map(), String.t) :: map()
   defp _add_maps(prefix, data, parsed)
   defp _add_maps([], data, _parsed), do: data
 
@@ -121,9 +130,13 @@ defmodule MuchData do
     %{data1 | h => result}
   end
 
-  defp _parse_yml(file) do
-    # |> IO.inspect(label: :parsed)
-    YamlElixir.read_from_file!(file)
-    |> Map.put(:file, file)
+  @spec _parse_yml(String.t) :: map()
+  defp _parse_yml(file, options \\ []) do
+    result = YamlElixir.read_from_file!(file)
+    if Keyword.get(options, :include_filename) do
+      Map.put(result, :file, file)
+    else
+      result
+    end
   end
 end

@@ -29,7 +29,7 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
+Documentation can be generated with `mix docs`
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/much_data](https://hexdocs.pm/much_data).
 

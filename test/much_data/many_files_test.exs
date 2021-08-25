@@ -9,8 +9,10 @@ defmodule MuchData.ManyFilesTest do
       assert data == %{
         "level1" => %{
           "a" => %{
+            "x" => 2
           },
           "b" => %{
+            "y" => 3
           }
         }
       }
